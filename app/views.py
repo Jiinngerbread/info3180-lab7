@@ -33,18 +33,20 @@ def index(path):
 @app.route('/app/upload', methods=['POST'])
 def upload():
     form=UploadForm()
-
+    console.log('we are here')
     if request.method == 'POST' and form.validate_on_submit() == True:
         description = form.description.data
         try:
             photo = savePhoto(form.photo.data)
-            message = jsonify(message={"message":"File successfully uploaded", "filename"= photo, "description"=description})
-            return render_template("index.html", message=message)
+            success = {"message":"File successfully uploaded", "filename": photo, "description":description}
+            return jsonify(success=success)
+            # return render_template("index.html", message=message)
         except:
             flash("File was not uploaded", "danger")
     else:
-        errors = jsonify(errors = {"errors" = form_errors(form))
-        return render_template("index.html", errors=errors)
+        error = form_errors(form)
+        return jsonify(error=error)
+        # return render_template("index.html", errors=errors)
 
 
 def savePhoto(photo):
