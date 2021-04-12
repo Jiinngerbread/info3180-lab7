@@ -7,6 +7,8 @@ This file creates your application.
 
 from app import app
 from flask import render_template, request
+import os
+from app.forms import UploadForm
 
 ###
 # Routing for your application.
@@ -27,6 +29,28 @@ def index(path):
     Also we will render the initial webpage and then let VueJS take control.
     """
     return render_template('index.html')
+
+@app.route('/app/upload', methods=['POST'])
+def upload():
+    form=UploadForm()
+
+    if request.method == 'POST' and form.validate_on_submit() == True:
+        description = form.description.data
+        try:
+            photo = savePhoto(form.photo.data)
+            message = jsonify(message={"message":"File successfully uploaded", "filename"= photo, "description"=description})
+            return render_template("index.html", message=message)
+        except:
+            flash("File was not uploaded", "danger")
+    else:
+        errors = jsonify(errors = {"errors" = form_errors(form))
+        return render_template("index.html", errors=errors)
+
+
+def savePhoto(photo):
+    name = secure_filename(photo.filename)
+    photo.save(os.path.join(app.config['UPLOAD_FOLDER'], name))
+    return name
 
 
 # Here we define a function to collect form errors from Flask-WTF
